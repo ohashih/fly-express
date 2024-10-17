@@ -16,14 +16,16 @@
   >
   </script>
   <script type="text/javascript"  src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
-  <style>
-    #map { height: 800px; }
-  </style>
 </head>
 <body>
-  <div id="map"></div>
+  <div
+    id="map"
+    class="h-screen"
+  >
+  </div>
   <script>
-    var map = L.map('map', {drawControl: true}).setView([51.505, -0.09], 13);
+    var map = L.map('map', {drawControl: true});
+
     var popupForm = `
       <form
         id="popup-form"
@@ -47,6 +49,27 @@
       </form>
     `;
 
+    // 現在地を取得
+    navigator.geolocation.getCurrentPosition((position) => {
+      map.setView([position.coords.latitude, position.coords.longitude], 13);
+
+      fetch('/locations').then((response) => {
+        return response.json();
+      }).then((data) => {
+        data.forEach((location) => {
+          var marker = L.marker([location.latitude, location.longitude]).addTo(map);
+          marker.bindPopup(location.point_name);
+        });
+      });
+    });
+
+    // 10秒ごとに現在地を取得
+    setInterval(() => {
+      navigator.geolocation.getCurrentPosition((position) => {
+        map.panTo([position.coords.latitude, position.coords.longitude]);
+      });
+    }, 10000);
+
     let drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
 
@@ -54,21 +77,10 @@
       drawnItems.addLayer(e.layer);
     });
 
-    L.control.scale({metric: true}).addTo(map);
-
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
-
-    fetch('/locations').then((response) => {
-      return response.json();
-    }).then((data) => {
-      data.forEach((location) => {
-        var marker = L.marker([location.latitude, location.longitude]).addTo(map);
-        marker.bindPopup(location.point_name).openPopup();
-      });
-    });
 
     function onFormSubmit(e) {
       e.preventDefault();
@@ -93,7 +105,7 @@
     }
 
     function onMapClick(e) {
-      popLocation = e.latlng;
+      var popLocation = e.latlng;
 
       var popup = L.popup({closeButton: true, minWidth: 240})
           .setLatLng(e.latlng)
