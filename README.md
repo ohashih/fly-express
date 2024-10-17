@@ -64,6 +64,11 @@ asdf で Node.js をインストールする
 
     $ docker-compose up --build --detach map_db
 
+マイグレーションを実行
+
+    $ DATABASE_URL=postgres://postgres:postgres@localhost:5432/postgres \
+        npx prisma migrate deploy
+
 ローカルでビルド
 
     $ npm run build
@@ -74,6 +79,10 @@ asdf で Node.js をインストールする
 
 ブラウザで `http://localhost:3000` にアクセス
 
+ローカルでの PostgreSQL 停止(データは削除されない)
+
+    $ docker compose down
+
 ### コンテナでの実行
 
 コンテナでビルド、起動
@@ -81,6 +90,10 @@ asdf で Node.js をインストールする
     $ docker compose up --build
 
 ブラウザで `http://localhost:3000` にアクセス
+
+コンテナの停止
+
+    $ docker compose down
 
 ### Fly.io へのデプロイ
 
@@ -106,9 +119,13 @@ Fly.io にデプロイしたアプリケーションを開く
 
     $ psql -h localhost -U postgres -d postgres
 
+ローカルデータベースを削除する場合
+
+    $ docker compose down --volumes
+
 ### Fly.io での接続
 
-    $ fly postgres connect -a <PostgreSQL のアプリケーション名>
+    $ fly postgres connect -a <PostgreSQL のアプリケーション名> -d <Express のアプリケーション名>
 
 ## ゼロから作る手順
 
@@ -122,9 +139,15 @@ GitHub でリポジトリを作成
 
     $ npx node-demo --ems --express --postgresql --tailwindcss --prisma
 
+### スキーマの変更
+
+prisma ディレクトリの schema.prisma を本リポジトリの内容に変更する
+
 ### マイグレーションの作成
 
     $ npx prisma migrate dev --name init
+
+初期データ登録など、必要なマイグレーションを作成する
 
 ### Dockerfile の作成
 

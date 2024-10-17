@@ -10,7 +10,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Welcome {
-  id    Int     @id @default(autoincrement())
-  count Int
+model location {
+  id          Int     @id @default(autoincrement())
+  point_name  String
+  description String
+  latitude    Float
+  longitude   Float
 }

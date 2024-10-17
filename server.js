@@ -6,38 +6,15 @@ const fs = require('node:fs')
 // set up express web server
 const app = express()
 
-// set up static content
-app.use(express.static('public'))
-
 // open database
 const prisma = new PrismaClient();
 
-// last known count
-let count = 0
+// set up static content
+app.use(express.static('public'))
 
-// Main page
-app.get('/', async(_request, response) => {
-  // Get current count (may return hull)
-  const welcome = await prisma.welcome.findFirst()
-
-  // Increment count, creating table row if necessary
-  if (welcome) {
-    count = welcome.count + 1
-    await prisma.welcome.update({data: { count }, where: {id: welcome.id}})
-  } else {
-    count = 1
-    await prisma.welcome.create({data: { count }})
-  }
-
-  // render HTML response
-  try {
-    const content = fs.readFileSync('views/index.tmpl', 'utf-8')
-      .replace('@@COUNT@@', count.toString())
-    response.set('Content-Type', 'text/html')
-    response.send(content)
-  } catch (error) {
-    response.send()
-  }
+app.get('/locations', async (req, res) => {
+  const locations = await prisma.location.findMany();
+  res.json(locations);
 })
 
 // run migrations
