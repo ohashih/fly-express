@@ -8,6 +8,7 @@
     crossorigin=""
   />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw-src.css">
+  <link rel="stylesheet" href="./index.css" />
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
@@ -23,6 +24,28 @@
   <div id="map"></div>
   <script>
     var map = L.map('map', {drawControl: true}).setView([51.505, -0.09], 13);
+    var popupForm = `
+      <form
+        id="popup-form"
+        class="flex flex-col"
+        onsubmit="onFormSubmit(event)"
+        data-lat="@@lat@@"
+        data-lng="@@lng@@"
+      >
+        <h2 class="font-bold mb-3 text-lg">Add a point:</h2>
+        <div class="w-full flex justify-between mb-2">
+          <label for="point-name">Point Name</label>
+          <input type="text" id="point-name" class="border p-1" >
+        </div>
+        <div class="w-full flex justify-between mb-2">
+          <label for="description">Description</label>
+          <input type="text" id="description" class="border p-1" >
+        </div>
+        <div class="w-full flex justify-end">
+          <button type="submit" id="btn-submit" class="border rounded p-1 bg-neutral-50">Save</button>
+        </div>
+      </form>
+    `;
 
     let drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
@@ -46,6 +69,39 @@
         marker.bindPopup(location.point_name).openPopup();
       });
     });
+
+    function onFormSubmit(e) {
+      e.preventDefault();
+      console.log(e);
+      fetch('/locations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          latitude: e.target.dataset.lat,
+          longitude: e.target.dataset.lng,
+          point_name: e.target.querySelector('#point-name').value,
+          description: e.target.querySelector('#description').value
+        })
+      }).then((response) => {
+        return response.json();
+      }).then((data) => {
+        var marker = L.marker([data.latitude, data.longitude]).addTo(map);
+        marker.bindPopup(data.point_name).openPopup();
+      });
+    }
+
+    function onMapClick(e) {
+      popLocation = e.latlng;
+
+      var popup = L.popup({closeButton: true, minWidth: 240})
+          .setLatLng(e.latlng)
+          .setContent(popupForm.replace('@@lat@@', e.latlng.lat).replace('@@lng@@', e.latlng.lng))
+          .openOn(map);
+    }
+
+    map.on('click', onMapClick);
   </script>
 </body>
 </html>

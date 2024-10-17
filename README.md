@@ -64,10 +64,13 @@ asdf で Node.js をインストールする
 
     $ docker-compose up --build --detach map_db
 
+環境変数を設定
+
+    $ export DATABASE_URL=postgres://postgres:postgres@localhost:5432/postgres
+
 マイグレーションを実行
 
-    $ DATABASE_URL=postgres://postgres:postgres@localhost:5432/postgres \
-        npx prisma migrate deploy
+    $ npx prisma migrate deploy
 
 ローカルでビルド
 
@@ -111,7 +114,7 @@ Fly.io にデプロイ
 
 Fly.io にデプロイしたアプリケーションを開く
 
-    $ fly open
+    $ fly apps open
 
 ## データベースへの接続
 
@@ -168,3 +171,5 @@ Fly.io にアプリケーションを作成
 データベースに PostgreSQL を設定する
 
 メモリを 256 MB に設定する
+
+Fly.io のデプロイトークンを作成し、 GitHub リポジトリの Secrets に登録する
