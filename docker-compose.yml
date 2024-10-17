@@ -1,0 +1,27 @@
+---
+
+services:
+  map_app:
+    build: .
+    container_name: map_app
+    depends_on:
+      - map_db
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@map_db:5432/postgres
+    ports:
+      - '3000:3000'
+
+  map_db:
+    image: postgres:16-bullseye
+    container_name: map_db
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    volumes:
+      - map_db:/var/lib/postgresql/data
+
+volumes:
+  map_db:
