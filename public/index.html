@@ -63,13 +63,6 @@
       });
     });
 
-    // 10秒ごとに現在地を取得
-    setInterval(() => {
-      navigator.geolocation.getCurrentPosition((position) => {
-        map.panTo([position.coords.latitude, position.coords.longitude]);
-      });
-    }, 10000);
-
     let drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
 
