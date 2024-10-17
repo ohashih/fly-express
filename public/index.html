@@ -7,15 +7,25 @@
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
     crossorigin=""
   />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw-src.css">
-  <link rel="stylesheet" href="./index.css" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw-src.css"
+  />
+  <link
+    rel="stylesheet"
+    href="./index.css"
+  />
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin=""
   >
   </script>
-  <script type="text/javascript"  src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+  <script
+    type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"
+  >
+  </script>
 </head>
 <body>
   <div
@@ -25,6 +35,7 @@
   </div>
   <script>
     var map = L.map('map', {drawControl: true});
+    map.setView([33.18, 131.62], 16);
 
     var popupForm = `
       <form
@@ -44,14 +55,20 @@
           <input type="text" id="description" class="border p-1" >
         </div>
         <div class="w-full flex justify-end">
-          <button type="submit" id="btn-submit" class="border rounded p-1 bg-neutral-50">Save</button>
+          <button
+            type="submit"
+            id="btn-submit"
+            class="border rounded p-1 bg-neutral-50"
+          >
+            保存
+          </button>
         </div>
       </form>
     `;
 
     // 現在地を取得
     navigator.geolocation.getCurrentPosition((position) => {
-      map.setView([position.coords.latitude, position.coords.longitude], 13);
+      map.panTo([position.coords.latitude, position.coords.longitude]);
 
       fetch('/locations').then((response) => {
         return response.json();
