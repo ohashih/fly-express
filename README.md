@@ -23,6 +23,7 @@ WSL を使わずに Windows 上で開発する場合、以下のツールをイ�
 
 - [Git](https://git-scm.com/)
 - [Node.js](https://nodejs.org/ja/) 20.5.0 以上
+- [Yarn](https://yarnpkg.com/getting-started/install)
 - [Docker Desktop](https://docs.docker.com/docker-for-windows/install/)
 - [flyctl](https://fly.io/docs/getting-started/installing-flyctl/)
 
@@ -56,13 +57,13 @@ asdf で Node.js をインストールする
 
 ### Node.js パッケージのインストール
 
-    $ npm install
+    $ yarn
 
 ### ローカルでの実行
 
 コンテナで PostgreSQL を起動
 
-    $ docker-compose up --build --detach map_db
+    $ docker compose up --build --detach map_db
 
 環境変数を設定
 
@@ -70,15 +71,15 @@ asdf で Node.js をインストールする
 
 マイグレーションを実行
 
-    $ npx prisma migrate deploy
+    $ yarn prisma migrate deploy
 
 ローカルでビルド
 
-    $ npm run build
+    $ yarn build
 
 ローカルで起動
 
-    $ npm run start
+    $ yarn start
 
 ブラウザで `http://localhost:3000` にアクセス
 

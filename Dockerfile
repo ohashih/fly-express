@@ -25,18 +25,17 @@ RUN apt-get update -qq && \
         python-is-python3
 
 # Install node modules
-COPY package-lock.json package.json ./
-RUN npm ci --include=dev
+COPY yarn.lock package.json ./
+RUN yarn install --production=false
 
 # Copy application code
 COPY . .
 
 # Build application
-RUN npm run build
+RUN yarn build
 
-# Remove development dependencies
-RUN npm prune --omit=dev
-
+# Install production dependencies
+RUN yarn install --production
 
 # Final stage for app image
 FROM base
