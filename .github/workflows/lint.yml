@@ -2,7 +2,8 @@
 
 name: lint
 
-on: [pull_request]
+on:
+  - pull_request
 
 permissions: read-all
 
@@ -25,6 +26,6 @@ jobs:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LINTER_RULES_PATH: ./
-          VALIDATE_ANSIBLE=false
-          VALIDATE_JAVASCRIPT_STANDARD=false
+          VALIDATE_ANSIBLE: false
+          VALIDATE_JAVASCRIPT_STANDARD: false
           VALIDATE_ALL_CODEBASE: false

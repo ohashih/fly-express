@@ -11,6 +11,7 @@ import iconShadow from "leaflet/dist/images/marker-shadow.png";
 
 var map = L.map("map", { drawControl: true });
 
+// デフォルトのアイコンを変更
 var DefaultIcon = L.icon({
   iconUrl: icon,
   iconRetinaUrl: iconRetina,
@@ -23,8 +24,10 @@ var DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
+// 初期位置を設定
 map.setView([33.18, 131.62], 16);
 
+// ポップアップフォーム
 var popupForm = `
   <form
     id="popup-form"
@@ -71,6 +74,7 @@ navigator.geolocation.getCurrentPosition((position) => {
     });
 });
 
+// 描画した図形を格納するレイヤー
 let drawnItems = new L.FeatureGroup();
 map.addLayer(drawnItems);
 
@@ -84,6 +88,7 @@ L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 }).addTo(map);
 
+// フォーム送信時の処理
 function onFormSubmit(e) {
   e.preventDefault();
   console.log(e);
@@ -108,6 +113,7 @@ function onFormSubmit(e) {
     });
 }
 
+// マップクリック時の処理
 function onMapClick(e) {
   L.popup({ closeButton: true, minWidth: 240 })
     .setLatLng(e.latlng)
