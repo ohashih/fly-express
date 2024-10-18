@@ -1,8 +1,15 @@
-## Fly.io の Express サンプル
+# Fly.io の Express サンプル
 
 Fly.io で Express を動かすサンプル
 
 ## 必要な環境
+
+### クラウドサービス
+
+クラウドサービスのアカウントを作成する
+
+- [GitHub](https://github.co.jp/)
+- [Fly.io](https://fly.io/)
 
 ### macOS 、 Linux の場合
 
@@ -159,7 +166,7 @@ prisma ディレクトリの schema.prisma を本リポジトリの内容に変�
 
 docker-compose.yml を本リポジトリの内容で作成する
 
-### Fly.io へのデプロイ
+### デプロイ
 
 Fly.io にログイン
 

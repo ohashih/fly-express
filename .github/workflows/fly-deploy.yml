@@ -1,4 +1,4 @@
-# See https://fly.io/docs/app-guides/continuous-deployment-with-github-actions/
+---
 
 name: Fly Deploy
 
@@ -7,10 +7,16 @@ on:
     branches:
       - main
 
+permissions: read-all
+
 jobs:
   deploy:
     name: Deploy app
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+      statuses: write
     concurrency: deploy-group    # optional: ensure only one action runs at a time
     steps:
       - uses: actions/checkout@v4
