@@ -1,16 +1,15 @@
+import "./style.css";
+import "leaflet/dist/leaflet.css";
+import "leaflet-draw/dist/leaflet.draw.css";
 
-import './style.css'
-import 'leaflet/dist/leaflet.css'
-import 'leaflet-draw/dist/leaflet.draw.css'
-
-import L from 'leaflet'
-import 'leaflet-draw/dist/leaflet.draw'
+import L from "leaflet";
+import "leaflet-draw/dist/leaflet.draw";
 
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconRetina from "leaflet/dist/images/marker-icon-2x.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
 
-var map = L.map('map', {drawControl: true});
+var map = L.map("map", { drawControl: true });
 
 var DefaultIcon = L.icon({
   iconUrl: icon,
@@ -20,7 +19,7 @@ var DefaultIcon = L.icon({
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
   tooltipAnchor: [16, -28],
-  shadowSize: [41, 41]
+  shadowSize: [41, 41],
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
@@ -58,57 +57,70 @@ var popupForm = `
 navigator.geolocation.getCurrentPosition((position) => {
   map.panTo([position.coords.latitude, position.coords.longitude]);
 
-  fetch('/api/locations').then((response) => {
-    return response.json();
-  }).then((data) => {
-    data.forEach((location) => {
-      var marker = L.marker([location.latitude, location.longitude]).addTo(map);
-      marker.bindPopup(location.point_name);
+  fetch("/api/locations")
+    .then((response) => {
+      return response.json();
+    })
+    .then((data) => {
+      data.forEach((location) => {
+        var marker = L.marker([location.latitude, location.longitude]).addTo(
+          map,
+        );
+        marker.bindPopup(location.point_name);
+      });
     });
-  });
 });
 
 let drawnItems = new L.FeatureGroup();
 map.addLayer(drawnItems);
 
-map.on('draw:created', (e) => {
+map.on("draw:created", (e) => {
   drawnItems.addLayer(e.layer);
 });
 
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
-  attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  attribution:
+    '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 }).addTo(map);
 
 function onFormSubmit(e) {
   e.preventDefault();
   console.log(e);
-  fetch('/api/locations', {
-    method: 'POST',
+  fetch("/api/locations", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json'
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       latitude: e.target.dataset.lat,
       longitude: e.target.dataset.lng,
-      point_name: e.target.querySelector('#point-name').value,
-      description: e.target.querySelector('#description').value
+      point_name: e.target.querySelector("#point-name").value,
+      description: e.target.querySelector("#description").value,
+    }),
+  })
+    .then((response) => {
+      return response.json();
     })
-  }).then((response) => {
-    return response.json();
-  }).then((data) => {
-    var marker = L.marker([data.latitude, data.longitude]).addTo(map);
-    marker.bindPopup(data.point_name).openPopup();
-  });
+    .then((data) => {
+      var marker = L.marker([data.latitude, data.longitude]).addTo(map);
+      marker.bindPopup(data.point_name).openPopup();
+    });
 }
 
 function onMapClick(e) {
-  L.popup({closeButton: true, minWidth: 240})
-      .setLatLng(e.latlng)
-      .setContent(popupForm.replace('@@lat@@', e.latlng.lat).replace('@@lng@@', e.latlng.lng))
-      .openOn(map);
+  L.popup({ closeButton: true, minWidth: 240 })
+    .setLatLng(e.latlng)
+    .setContent(
+      popupForm
+        .replace("@@lat@@", e.latlng.lat)
+        .replace("@@lng@@", e.latlng.lng),
+    )
+    .openOn(map);
 
-  document.getElementById('popup-form').addEventListener('submit', onFormSubmit);
+  document
+    .getElementById("popup-form")
+    .addEventListener("submit", onFormSubmit);
 }
 
-map.on('click', onMapClick);
+map.on("click", onMapClick);
