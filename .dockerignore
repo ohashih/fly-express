@@ -1,4 +1,6 @@
 /.git
+/.github
+/dist
 /node_modules
 .dockerignore
 .env

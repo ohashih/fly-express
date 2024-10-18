@@ -1,4 +1,6 @@
 
+import './style.css'
+
 var map = L.map('map', {drawControl: true});
 map.setView([33.18, 131.62], 16);
 
@@ -6,7 +8,6 @@ var popupForm = `
   <form
     id="popup-form"
     class="flex flex-col"
-    onsubmit="onFormSubmit(event)"
     data-lat="@@lat@@"
     data-lng="@@lng@@"
   >
@@ -35,7 +36,7 @@ var popupForm = `
 navigator.geolocation.getCurrentPosition((position) => {
   map.panTo([position.coords.latitude, position.coords.longitude]);
 
-  fetch('/locations').then((response) => {
+  fetch('/api/locations').then((response) => {
     return response.json();
   }).then((data) => {
     data.forEach((location) => {
@@ -60,7 +61,7 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 function onFormSubmit(e) {
   e.preventDefault();
   console.log(e);
-  fetch('/locations', {
+  fetch('/api/locations', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -80,12 +81,12 @@ function onFormSubmit(e) {
 }
 
 function onMapClick(e) {
-  var popLocation = e.latlng;
-
-  var popup = L.popup({closeButton: true, minWidth: 240})
+  L.popup({closeButton: true, minWidth: 240})
       .setLatLng(e.latlng)
       .setContent(popupForm.replace('@@lat@@', e.latlng.lat).replace('@@lng@@', e.latlng.lng))
       .openOn(map);
+
+  document.getElementById('popup-form').addEventListener('submit', onFormSubmit);
 }
 
 map.on('click', onMapClick);

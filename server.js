@@ -4,23 +4,20 @@ const express = require('express')
 const bodyParser = require('body-parser')
 
 // set up express web server
-const app = express()
+const app = express();
 
 // open database
 const prisma = new PrismaClient();
 
-app.use(bodyParser.urlencoded({ extended: true }))
-app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
-// set up static content
-app.use(express.static('public'))
-
-app.get('/locations', async (req, res) => {
+app.get('/api/locations', async (req, res) => {
   const locations = await prisma.location.findMany();
   res.json(locations);
-})
+});
 
-app.post('/locations', async (req, res) => {
+app.post('/api/locations', async (req, res) => {
   const body = req.body;
 
   const latitude = parseFloat(body.latitude);
@@ -35,14 +32,16 @@ app.post('/locations', async (req, res) => {
     }
   });
   res.json(location);
-})
+});
 
-// run migrations
 if (process.env.NODE_ENV === 'production') {
+  // データベースのマイグレーションを実行
   execSync('npx prisma migrate deploy', { stdio: 'inherit' });
+
+  // 静的コンテンツを配信
+  app.use(express.static('dist'));
 }
 
-// Start web server on port 3000
 app.listen(3000, () => {
-  console.log('Server is listening on port 3000')
+  console.log('Server is listening on port 3000');
 })
