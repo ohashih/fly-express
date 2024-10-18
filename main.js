@@ -1,5 +1,10 @@
 
 import './style.css'
+import 'leaflet/dist/leaflet.css'
+import 'leaflet-draw/dist/leaflet.draw.css'
+
+import L from 'leaflet'
+import 'leaflet-draw/dist/leaflet.draw'
 
 var map = L.map('map', {drawControl: true});
 map.setView([33.18, 131.62], 16);
