@@ -24,25 +24,22 @@ var DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-// 初期位置を設定
-map.setView([33.18, 131.62], 16);
-
 // ポップアップフォーム
-var popupForm = `
+const popupForm = `
   <form
     id="popup-form"
     class="flex flex-col"
     data-lat="@@lat@@"
     data-lng="@@lng@@"
   >
-    <h2 class="font-bold mb-3 text-lg">場所の追加</h2>
+    <h2 class="font-bold mb-3 text-lg">Add a point:</h2>
     <div class="w-full flex justify-between mb-2">
-      <label for="point-name">名前</label>
-      <input type="text" id="point-name" class="border p-1" >
+      <label for="point-name">Point Name</label>
+      <input type="text" id="point-name" name="point-name" class="border p-1" >
     </div>
     <div class="w-full flex justify-between mb-2">
-      <label for="description">説明</label>
-      <input type="text" id="description" class="border p-1" >
+      <label for="description">Description</label>
+      <input type="text" id="description" name="description" class="border p-1" >
     </div>
     <div class="w-full flex justify-end">
       <button
@@ -56,77 +53,95 @@ var popupForm = `
   </form>
 `;
 
-// 現在地を取得
-navigator.geolocation.getCurrentPosition((position) => {
-  map.panTo([position.coords.latitude, position.coords.longitude]);
+const init = async () => {
+  // 地図の初期位置の設定
+  map.setView([33.18, 131.62], 16);
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      map.panTo([position.coords.latitude, position.coords.longitude]);
+    },
+    (error) => {
+      console.error("Geolocation error", error);
+    },
+  );
+  // 描画した図形を格納するレイヤー
+  const drawnItems = new L.FeatureGroup();
+  map.addLayer(drawnItems);
+  map.on("draw:created", (e) => {
+    drawnItems.addLayer(e.layer);
+  });
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution:
+      '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  }).addTo(map);
 
-  fetch("/api/locations")
-    .then((response) => {
-      return response.json();
-    })
-    .then((data) => {
-      data.forEach((location) => {
-        var marker = L.marker([location.latitude, location.longitude]).addTo(
-          map,
-        );
-        marker.bindPopup(location.point_name);
-      });
-    });
-});
+  await loadMarkers();
+};
 
-// 描画した図形を格納するレイヤー
-let drawnItems = new L.FeatureGroup();
-map.addLayer(drawnItems);
-
-map.on("draw:created", (e) => {
-  drawnItems.addLayer(e.layer);
-});
-
-L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  maxZoom: 19,
-  attribution:
-    '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-}).addTo(map);
+const loadMarkers = async () => {
+  const response = await fetch("/api/locations");
+  const locations = await response.json();
+  if (locations.length === 0) {
+    console.log("NO locations");
+    return;
+  }
+  locations.forEach((location) => {
+    const marker = L.marker([location.latitude, location.longitude]).addTo(map);
+    marker.bindPopup(location.point_name);
+  });
+};
 
 // フォーム送信時の処理
-function onFormSubmit(e) {
+const onFormSubmit = async (e) => {
   e.preventDefault();
-  console.log(e);
-  fetch("/api/locations", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      latitude: e.target.dataset.lat,
-      longitude: e.target.dataset.lng,
-      point_name: e.target.querySelector("#point-name").value,
-      description: e.target.querySelector("#description").value,
-    }),
-  })
-    .then((response) => {
-      return response.json();
-    })
-    .then((data) => {
-      var marker = L.marker([data.latitude, data.longitude]).addTo(map);
-      marker.bindPopup(data.point_name).openPopup();
-    });
-}
+  const formData = new FormData(e.target);
+  const data = {
+    latitude: e.target.dataset.lat,
+    longitude: e.target.dataset.lng,
+    point_name: formData.get("point-name"),
+    description: formData.get("description"),
+  };
 
-// マップダブルクリック時の処理
-function onMapDbClick(e) {
+  if (data.point_name === "" || data.description === "") {
+    alert("Please enter a point name");
+    return;
+  }
+  try {
+    const response = await fetch("/api/locations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to save location ${response.status}`);
+    }
+    const location = await response.json();
+    const marker = L.marker([location.latitude, location.longitude]).addTo(map);
+    marker.bindPopup(location.point_name).openPopup();
+  } catch (error) {
+    console.error("submitting from:", error);
+  }
+};
+
+// マップクリック時の処理
+const onMapClick = (e) => {
   L.popup({ closeButton: true, minWidth: 240 })
     .setLatLng(e.latlng)
     .setContent(
       popupForm
-        .replace("@@lat@@", e.latlng.lat)
-        .replace("@@lng@@", e.latlng.lng),
+        .replace(/@@lat@@/g, e.latlng.lat)
+        .replace(/@@lng@@/g, e.latlng.lng),
     )
     .openOn(map);
 
   document
     .getElementById("popup-form")
     .addEventListener("submit", onFormSubmit);
-}
+};
 
-map.on("dblclick", onMapDbClick);
+init();
+map.on("click", onMapClick);
