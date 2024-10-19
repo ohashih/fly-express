@@ -35,13 +35,13 @@ var popupForm = `
     data-lat="@@lat@@"
     data-lng="@@lng@@"
   >
-    <h2 class="font-bold mb-3 text-lg">Add a point:</h2>
+    <h2 class="font-bold mb-3 text-lg">場所の追加</h2>
     <div class="w-full flex justify-between mb-2">
-      <label for="point-name">Point Name</label>
+      <label for="point-name">名前</label>
       <input type="text" id="point-name" class="border p-1" >
     </div>
     <div class="w-full flex justify-between mb-2">
-      <label for="description">Description</label>
+      <label for="description">説明</label>
       <input type="text" id="description" class="border p-1" >
     </div>
     <div class="w-full flex justify-end">
@@ -113,8 +113,8 @@ function onFormSubmit(e) {
     });
 }
 
-// マップクリック時の処理
-function onMapClick(e) {
+// マップダブルクリック時の処理
+function onMapDbClick(e) {
   L.popup({ closeButton: true, minWidth: 240 })
     .setLatLng(e.latlng)
     .setContent(
@@ -129,4 +129,4 @@ function onMapClick(e) {
     .addEventListener("submit", onFormSubmit);
 }
 
-map.on("click", onMapClick);
+map.on("dblclick", onMapDbClick);
