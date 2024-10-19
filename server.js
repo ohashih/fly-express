@@ -13,8 +13,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.get('/api/locations', async (req, res) => {
-  const locations = await prisma.location.findMany();
-  res.json(locations);
+  try {
+    const locations = await prisma.location.findMany();
+    res.json(locations);
+  } catch (error) {
+    console.error('Error fetch locations:', error);
+    res.status(500).json({ error: 'Failed to fetch locations' });
+  }
 });
 
 app.post('/api/locations', async (req, res) => {
@@ -23,21 +28,50 @@ app.post('/api/locations', async (req, res) => {
   const latitude = parseFloat(body.latitude);
   const longitude = parseFloat(body.longitude);
 
-  const location = await prisma.location.create({
-    data: {
-      point_name: body.point_name,
-      description: body.description,
-      latitude: latitude,
-      longitude: longitude,
-    }
-  });
-  res.json(location);
+  if (isNaN(latitude) || isNaN(longitude)) {
+    return res.status(400).json({ error: 'Invalid latitude or longitude' });
+  }
+
+  try {
+    const location = await prisma.location.create({
+      data: {
+        point_name: body.point_name,
+        description: body.description,
+        latitude: latitude,
+        longitude: longitude,
+      }
+    });
+    res.json(location);
+  } catch (error) {
+    console.error('Error creating location:', error);
+    res.status(500).json({ error: 'Failed to create location' });
+  }
+});
+
+app.delete('/api/locations/:id', async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json({ error: 'Invalid location id' });
+  }
+  try {
+    const location = await prisma.location.delete({
+      where: { id: id }
+    });
+    res.json(location);
+  } catch (e) {
+    console.error('Error delete location:', error);
+    res.status(500).json({ error: 'Failed to delete location' });
+  }
 });
 
 if (process.env.NODE_ENV === 'production') {
   // データベースのマイグレーションを実行
-  execSync('npx prisma migrate deploy', { stdio: 'inherit' });
-
+  try {
+    execSync('npx prisma migrate deploy', { stdio: 'inherit' });
+  } catch (error) {
+    console.error('Error migrating database:', error);
+    process.exit(1);
+  }
   // 静的コンテンツを配信
   app.use(express.static('dist'));
 }
