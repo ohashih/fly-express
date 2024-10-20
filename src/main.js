@@ -12,7 +12,7 @@ import iconShadow from "leaflet/dist/images/marker-shadow.png";
 var map = L.map("map", { drawControl: true });
 
 // デフォルトのアイコンを変更
-var DefaultIcon = L.icon({
+const DefaultIcon = L.icon({
   iconUrl: icon,
   iconRetinaUrl: iconRetina,
   shadowUrl: iconShadow,
@@ -53,6 +53,26 @@ const popupForm = `
   </form>
 `;
 
+const markerPopup = `
+  <form
+    id="marker-form"
+    class="flex flex-col"
+    data-lat="@@lat@@"
+    data-lng="@@lng@@"
+  >
+    <h2 class="font-bold text-lg text-gray-900 mb-3">@@point_name@@</h2>
+    <p class="italic text-gray-80">@@description@@</p>
+    <div class="w-full flex justify-end">
+      <button
+        id="btn-delete"
+        class="border rounded p-1 bg-neutral-50"
+      >
+        削除
+      </button>
+    </div>
+  </form>
+`;
+
 const init = async () => {
   // 地図の初期位置の設定
   map.setView([33.18, 131.62], 16);
@@ -88,8 +108,27 @@ const loadMarkers = async () => {
   }
   locations.forEach((location) => {
     const marker = L.marker([location.latitude, location.longitude]).addTo(map);
-    marker.bindPopup(location.point_name);
+    const popUp = createPopup(location, markerPopup);
+    marker.bindPopup(popUp);
+    marker.on("popupopen", () => {
+      const btn_delete = document.querySelector("#btn-delete");
+      if (btn_delete) {
+        btn_delete.addEventListener("click", (e) =>
+          onDeleteMarker(e, marker, location),
+        );
+      }
+    });
   });
+};
+
+const createPopup = (location, popupContent, option = {}) => {
+  return L.popup(option)
+    .setLatLng([location.latitude, location.longitude])
+    .setContent(
+      popupContent
+        .replace(/@@point_name@@/g, location.point_name)
+        .replace(/@@description@@/g, location.description),
+    );
 };
 
 // フォーム送信時の処理
@@ -115,13 +154,13 @@ const onFormSubmit = async (e) => {
       },
       body: JSON.stringify(data),
     });
-
     if (!response.ok) {
       throw new Error(`Failed to save location ${response.status}`);
     }
     const location = await response.json();
     const marker = L.marker([location.latitude, location.longitude]).addTo(map);
-    marker.bindPopup(location.point_name).openPopup();
+    const popUp = createPopup(location, markerPopup);
+    marker.bindPopup(popUp).openPopup();
   } catch (error) {
     console.error("submitting from:", error);
   }
@@ -141,6 +180,22 @@ const onMapClick = (e) => {
   document
     .getElementById("popup-form")
     .addEventListener("submit", onFormSubmit);
+};
+
+// Markerの削除
+const onDeleteMarker = async (e, marker, location) => {
+  e.preventDefault();
+  try {
+    const response = await fetch(`/api/locations/${location.id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to delete location ${response.status}`);
+    }
+    map.removeLayer(marker);
+  } catch (error) {
+    console.error("delete marker:", error);
+  }
 };
 
 init();
